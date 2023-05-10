@@ -35,7 +35,7 @@ public class ModelManager implements ModelService {
     }
 
     @Override
-    public GetModelResponse getByI(UUID id) {
+    public GetModelResponse getById(UUID id) {
         rules.checkIfModelExists(id);
         Model model = repository.findById(id).orElseThrow();
         return mapper.forResponse().map(model, GetModelResponse.class);

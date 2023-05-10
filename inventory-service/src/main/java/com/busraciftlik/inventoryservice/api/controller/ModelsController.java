@@ -26,7 +26,7 @@ public class ModelsController {
 
     @GetMapping("/{id}")
     GetModelResponse getById(@PathVariable UUID id) {
-        return service.getByI(id);
+        return service.getById(id);
     }
 
     @PostMapping

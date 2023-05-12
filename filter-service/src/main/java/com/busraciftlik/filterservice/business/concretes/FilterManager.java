@@ -32,14 +32,12 @@ public class FilterManager implements FilterService {
     @Override
     public GetFilterResponse getById(UUID id) {
         var filter = repository.findById(id).orElseThrow();
-        var response = mapper.forResponse().map(filter, GetFilterResponse.class);
+        return mapper.forResponse().map(filter, GetFilterResponse.class);
 
-        return response;
     }
 
     @Override
     public void add(Filter filter) {
-        filter.setId(UUID.randomUUID());
         repository.save(filter);
     }
 
@@ -49,8 +47,13 @@ public class FilterManager implements FilterService {
     }
 
     @Override
-    public void deleteAllByBrandId(UUID brandId) {
+    public void deleteByCarId(UUID carId) {
+        repository.deleteByCarId(carId);
+    }
 
+    @Override
+    public void deleteAllByBrandId(UUID brandId) {
+        repository.deleteAllByBrandId(brandId);
     }
 
     @Override

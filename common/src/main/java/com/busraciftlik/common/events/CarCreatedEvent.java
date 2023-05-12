@@ -1,4 +1,4 @@
-package com.busraciftlik.filterservice.business.dto;
+package com.busraciftlik.common.events;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -7,19 +7,18 @@ import lombok.Setter;
 
 import java.util.UUID;
 
-@AllArgsConstructor
-@NoArgsConstructor
 @Getter
 @Setter
-public class GetFilterResponse {
-    private String id;
+@AllArgsConstructor
+@NoArgsConstructor
+public class CarCreatedEvent {
     private UUID carId;
     private UUID modelId;
     private UUID brandId;
+    private int modelYear;
+    private String plate;
+    private String state;
+    private double dailyPrice;
     private String modelName;
     private String brandName;
-    private String plate;
-    private int modelYear;
-    private double dailyPrice;
-    private String state;
 }

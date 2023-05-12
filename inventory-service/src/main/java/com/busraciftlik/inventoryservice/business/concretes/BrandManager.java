@@ -1,5 +1,6 @@
 package com.busraciftlik.inventoryservice.business.concretes;
 
+import com.busraciftlik.common.events.BrandDeletedEvent;
 import com.busraciftlik.common.util.mapper.ModelMapperService;
 import com.busraciftlik.inventoryservice.business.abstracts.BrandService;
 import com.busraciftlik.inventoryservice.business.dto.requests.create.CreateBrandRequest;
@@ -8,6 +9,7 @@ import com.busraciftlik.inventoryservice.business.dto.responses.create.CreateBra
 import com.busraciftlik.inventoryservice.business.dto.responses.get.GetAllBrandsResponse;
 import com.busraciftlik.inventoryservice.business.dto.responses.get.GetBrandResponse;
 import com.busraciftlik.inventoryservice.business.dto.responses.update.UpdateBrandResponse;
+import com.busraciftlik.inventoryservice.business.kafka.producer.InventoryProducer;
 import com.busraciftlik.inventoryservice.business.rules.BrandBusinessRules;
 import com.busraciftlik.inventoryservice.entities.Brand;
 import com.busraciftlik.inventoryservice.repository.BrandRepository;
@@ -23,6 +25,7 @@ public class BrandManager implements BrandService {
     private final BrandRepository repository;
     private final ModelMapperService mapper;
     private final BrandBusinessRules rules;
+    private final InventoryProducer producer;
 
     @Override
     public List<GetAllBrandsResponse> getAll() {
@@ -63,5 +66,11 @@ public class BrandManager implements BrandService {
     public void delete(UUID id) {
         rules.checkIfBrandExists(id);
         repository.deleteById(id);
+        sendKafkaBrandDeletedEvent(id);
+
     }
+    private void sendKafkaBrandDeletedEvent(UUID id){
+        producer.sendMessage(new BrandDeletedEvent(id));
+    }
+
 }

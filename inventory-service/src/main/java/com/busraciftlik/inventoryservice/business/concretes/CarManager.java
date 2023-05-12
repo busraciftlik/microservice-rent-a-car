@@ -1,5 +1,7 @@
 package com.busraciftlik.inventoryservice.business.concretes;
 
+import com.busraciftlik.common.events.CarCreatedEvent;
+import com.busraciftlik.common.events.CarDeletedEvent;
 import com.busraciftlik.common.util.mapper.ModelMapperService;
 import com.busraciftlik.inventoryservice.business.abstracts.CarService;
 import com.busraciftlik.inventoryservice.business.dto.requests.create.CreateCarRequest;
@@ -8,6 +10,7 @@ import com.busraciftlik.inventoryservice.business.dto.responses.create.CreateCar
 import com.busraciftlik.inventoryservice.business.dto.responses.get.GetAllCarsResponse;
 import com.busraciftlik.inventoryservice.business.dto.responses.get.GetCarResponse;
 import com.busraciftlik.inventoryservice.business.dto.responses.update.UpdateCarResponse;
+import com.busraciftlik.inventoryservice.business.kafka.producer.InventoryProducer;
 import com.busraciftlik.inventoryservice.business.rules.CarBusinessRules;
 import com.busraciftlik.inventoryservice.entities.Car;
 import com.busraciftlik.inventoryservice.entities.enums.State;
@@ -24,6 +27,7 @@ public class CarManager implements CarService {
     private final CarRepository repository;
     private final ModelMapperService mapper;
     private final CarBusinessRules rules;
+    private final InventoryProducer producer;
 
     @Override
 
@@ -50,9 +54,9 @@ public class CarManager implements CarService {
         Car car = mapper.forRequest().map(request, Car.class);
         car.setId(UUID.randomUUID());
         car.setState(State.Available);
-        repository.save(car);
+        Car createdCar = repository.save(car);
+        sendKafkaCarCreatedEvent(createdCar);
         return mapper.forResponse().map(car, CreateCarResponse.class);
-
 
     }
 
@@ -70,6 +74,15 @@ public class CarManager implements CarService {
     public void delete(UUID id) {
         rules.checkIfCarExists(id);
         repository.deleteById(id);
+        sendKafkaCarDeletedEvent(id);
 
+    }
+    private void sendKafkaCarCreatedEvent(Car createdCar){
+        var event = mapper.forResponse().map(createdCar, CarCreatedEvent.class);
+        producer.sendMessage(event);
+    }
+
+    private void sendKafkaCarDeletedEvent(UUID id){
+        producer.sendMessage(new CarDeletedEvent(id));
     }
 }

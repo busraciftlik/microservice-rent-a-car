@@ -1,8 +1,8 @@
 package com.busraciftlik.inventoryservice.business.kafka.producer;
 
-import com.busraciftlik.common.events.BrandDeletedEvent;
-import com.busraciftlik.common.events.CarCreatedEvent;
-import com.busraciftlik.common.events.CarDeletedEvent;
+import com.busraciftlik.common.events.inventory.BrandDeletedEvent;
+import com.busraciftlik.common.events.inventory.CarCreatedEvent;
+import com.busraciftlik.common.events.inventory.CarDeletedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;

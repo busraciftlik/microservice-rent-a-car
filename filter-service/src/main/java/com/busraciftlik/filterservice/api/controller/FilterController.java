@@ -11,8 +11,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-@AllArgsConstructor
 @RestController
+@AllArgsConstructor
 @RequestMapping("/api/filters")
 public class FilterController {
     private final FilterService service;
@@ -26,7 +26,6 @@ public class FilterController {
     public GetFilterResponse getById(@PathVariable String id) {
         return service.getById(id);
     }
-
 }
 
 

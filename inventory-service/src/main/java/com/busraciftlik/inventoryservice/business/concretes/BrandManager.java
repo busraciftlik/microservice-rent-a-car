@@ -1,6 +1,6 @@
 package com.busraciftlik.inventoryservice.business.concretes;
 
-import com.busraciftlik.common.events.BrandDeletedEvent;
+import com.busraciftlik.common.events.inventory.BrandDeletedEvent;
 import com.busraciftlik.common.util.mapper.ModelMapperService;
 import com.busraciftlik.inventoryservice.business.abstracts.BrandService;
 import com.busraciftlik.inventoryservice.business.dto.requests.create.CreateBrandRequest;

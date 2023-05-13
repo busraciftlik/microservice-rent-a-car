@@ -1,6 +1,8 @@
 package com.busraciftlik.rentalservice.business.concretes;
 
+import com.busraciftlik.common.events.rental.RentalCreatedEvent;
 import com.busraciftlik.common.util.mapper.ModelMapperService;
+import com.busraciftlik.rentalservice.api.clients.CarClient;
 import com.busraciftlik.rentalservice.business.abstracts.RentalService;
 import com.busraciftlik.rentalservice.business.dto.requests.CreateRentalRequest;
 import com.busraciftlik.rentalservice.business.dto.requests.UpdateRentalRequest;
@@ -8,6 +10,7 @@ import com.busraciftlik.rentalservice.business.dto.responses.CreateRentalRespons
 import com.busraciftlik.rentalservice.business.dto.responses.GetAllRentalsResponse;
 import com.busraciftlik.rentalservice.business.dto.responses.GetRentalResponse;
 import com.busraciftlik.rentalservice.business.dto.responses.UpdateRentalResponse;
+import com.busraciftlik.rentalservice.business.kafka.producer.RentalProducer;
 import com.busraciftlik.rentalservice.business.rules.RentalBusinessRules;
 import com.busraciftlik.rentalservice.entities.Rental;
 import com.busraciftlik.rentalservice.repository.RentalRepository;
@@ -24,6 +27,8 @@ public class RentalManager implements RentalService {
     private final RentalRepository repository;
     private final ModelMapperService mapper;
     private final RentalBusinessRules rules;
+    private final CarClient carClient;
+    private final RentalProducer producer;
 
     @Override
     public List<GetAllRentalsResponse> getAll() {
@@ -47,14 +52,20 @@ public class RentalManager implements RentalService {
 
     @Override
     public CreateRentalResponse add(CreateRentalRequest request) {
+        carClient.checkIfCarAvailable(request.getCarId());
         var rental = mapper.forRequest().map(request, Rental.class);
         rental.setId(null);
         rental.setTotalPrice(getTotalPrice(rental));
         rental.setRentedAt(LocalDate.now());
         repository.save(rental);
+        sendKafkaRentalCreatedEvent(request.getCarId());
         var response = mapper.forResponse().map(rental, CreateRentalResponse.class);
 
         return response;
+    }
+
+    private void sendKafkaRentalCreatedEvent(UUID carId) {
+        producer.sendMessage(new RentalCreatedEvent(carId));
     }
 
     @Override

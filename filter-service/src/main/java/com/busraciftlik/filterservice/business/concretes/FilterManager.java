@@ -12,8 +12,8 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.UUID;
 
-@AllArgsConstructor
 @Service
+@AllArgsConstructor
 public class FilterManager implements FilterService {
     private final FilterRepository repository;
     private ModelMapperService mapper;
@@ -32,8 +32,9 @@ public class FilterManager implements FilterService {
     @Override
     public GetFilterResponse getById(String id) {
         var filter = repository.findById(id).orElseThrow();
-        return mapper.forResponse().map(filter, GetFilterResponse.class);
+        var response = mapper.forResponse().map(filter, GetFilterResponse.class);
 
+        return response;
     }
 
     @Override
@@ -59,5 +60,10 @@ public class FilterManager implements FilterService {
     @Override
     public void deleteAllByModelId(UUID modelId) {
 
+    }
+
+    @Override
+    public Filter getByCarId(UUID carId) {
+        return repository.findByCarId(carId);
     }
 }

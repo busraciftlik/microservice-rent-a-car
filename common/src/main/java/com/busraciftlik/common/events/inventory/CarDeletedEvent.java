@@ -1,4 +1,4 @@
-package com.busraciftlik.common.events;
+package com.busraciftlik.common.events.inventory;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

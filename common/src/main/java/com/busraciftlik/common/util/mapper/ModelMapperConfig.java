@@ -1,4 +1,4 @@
-package com.busraciftlik.filterservice.configuration;
+package com.busraciftlik.common.util.mapper;
 
 import com.busraciftlik.common.util.mapper.ModelMapperManager;
 import com.busraciftlik.common.util.mapper.ModelMapperService;
@@ -12,9 +12,9 @@ public class ModelMapperConfig {
     public ModelMapper getModelMapper(){
         return new ModelMapper();
     }
+
     @Bean
     public ModelMapperService getModelMapperService(ModelMapper mapper){
         return new ModelMapperManager(mapper);
     }
-
 }

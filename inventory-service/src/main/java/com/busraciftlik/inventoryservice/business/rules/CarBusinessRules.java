@@ -1,5 +1,6 @@
 package com.busraciftlik.inventoryservice.business.rules;
 
+import com.busraciftlik.common.util.exceptions.BusinessException;
 import com.busraciftlik.inventoryservice.repository.CarRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -11,9 +12,9 @@ import java.util.UUID;
 public class CarBusinessRules {
     private final CarRepository repository;
 
-    public void checkIfCarExists(UUID id){
-      //TODO:Business exception
-        throw new RuntimeException("CAR_NOT_EXISTS");
-
+    public void checkIfCarExists(UUID id) {
+        if (!repository.existsById(id)) {
+            throw new BusinessException("CAR_NOT_EXISTS");
+        }
     }
 }

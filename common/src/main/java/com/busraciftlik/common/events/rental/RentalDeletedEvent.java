@@ -1,4 +1,4 @@
-package com.busraciftlik.common.events.inventory;
+package com.busraciftlik.common.events.rental;
 
 import com.busraciftlik.common.events.Event;
 import lombok.AllArgsConstructor;
@@ -12,6 +12,6 @@ import java.util.UUID;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class CarDeletedEvent implements Event {
+public class RentalDeletedEvent implements Event {
     private UUID carId;
 }

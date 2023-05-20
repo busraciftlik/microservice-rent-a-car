@@ -1,5 +1,6 @@
 package com.busraciftlik.common.events.inventory;
 
+import com.busraciftlik.common.events.Event;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,7 +12,7 @@ import java.util.UUID;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class CarCreatedEvent {
+public class CarCreatedEvent implements Event {
     private UUID carId;
     private UUID modelId;
     private UUID brandId;

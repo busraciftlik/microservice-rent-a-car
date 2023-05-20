@@ -1,6 +1,7 @@
-package com.busraciftlik.common.util.exceptions;
+package com.busraciftlik.common.configuration.exceptions;
 
 import com.busraciftlik.common.util.constants.ExceptionTypes;
+import com.busraciftlik.common.util.exceptions.BusinessException;
 import com.busraciftlik.common.util.results.ExceptionResult;
 import jakarta.validation.ValidationException;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -26,19 +27,22 @@ public class RestExceptionHandler {
 
         return new ExceptionResult<>(ExceptionTypes.Exception.Validation, validationErrors);
     }
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY) // 422
-    public ExceptionResult<Object> handleBusinessException(BusinessException exception) {
-        return new ExceptionResult<>(ExceptionTypes.Exception.Business, exception.getMessage());
-    }
+
     @ExceptionHandler
     @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY) // 422
     public ExceptionResult<Object> handleValidationException(ValidationException exception) {
         return new ExceptionResult<>(ExceptionTypes.Exception.Validation, exception.getMessage());
     }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY) // 422
+    public ExceptionResult<Object> handleBusinessException(BusinessException exception) {
+        return new ExceptionResult<>(ExceptionTypes.Exception.Business, exception.getMessage());
+    }
+
     @ExceptionHandler
     @ResponseStatus(HttpStatus.CONFLICT) // 409
-    public ExceptionResult<Object> handleDataIntegrityViolationException(DataIntegrityViolationException exception) {
+    public ExceptionResult<Object> handleDataIntegrityViolation(DataIntegrityViolationException exception) {
         return new ExceptionResult<>(ExceptionTypes.Exception.DataIntegrityViolation, exception.getMessage());
     }
 

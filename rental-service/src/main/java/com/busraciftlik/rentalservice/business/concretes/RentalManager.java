@@ -1,6 +1,8 @@
 package com.busraciftlik.rentalservice.business.concretes;
 
 import com.busraciftlik.common.events.rental.RentalCreatedEvent;
+import com.busraciftlik.common.events.rental.RentalDeletedEvent;
+import com.busraciftlik.common.kafka.producer.KafkaProducer;
 import com.busraciftlik.common.util.mapper.ModelMapperService;
 import com.busraciftlik.rentalservice.api.clients.CarClient;
 import com.busraciftlik.rentalservice.business.abstracts.RentalService;
@@ -10,7 +12,6 @@ import com.busraciftlik.rentalservice.business.dto.responses.CreateRentalRespons
 import com.busraciftlik.rentalservice.business.dto.responses.GetAllRentalsResponse;
 import com.busraciftlik.rentalservice.business.dto.responses.GetRentalResponse;
 import com.busraciftlik.rentalservice.business.dto.responses.UpdateRentalResponse;
-import com.busraciftlik.rentalservice.business.kafka.producer.RentalProducer;
 import com.busraciftlik.rentalservice.business.rules.RentalBusinessRules;
 import com.busraciftlik.rentalservice.entities.Rental;
 import com.busraciftlik.rentalservice.repository.RentalRepository;
@@ -28,7 +29,7 @@ public class RentalManager implements RentalService {
     private final ModelMapperService mapper;
     private final RentalBusinessRules rules;
     private final CarClient carClient;
-    private final RentalProducer producer;
+    private final KafkaProducer producer;
 
     @Override
     public List<GetAllRentalsResponse> getAll() {
@@ -52,6 +53,7 @@ public class RentalManager implements RentalService {
 
     @Override
     public CreateRentalResponse add(CreateRentalRequest request) {
+        rules.ensureCarIsAvailable(request.getCarId());
         carClient.checkIfCarAvailable(request.getCarId());
         var rental = mapper.forRequest().map(request, Rental.class);
         rental.setId(null);
@@ -62,10 +64,6 @@ public class RentalManager implements RentalService {
         var response = mapper.forResponse().map(rental, CreateRentalResponse.class);
 
         return response;
-    }
-
-    private void sendKafkaRentalCreatedEvent(UUID carId) {
-        producer.sendMessage(new RentalCreatedEvent(carId));
     }
 
     @Override
@@ -82,10 +80,19 @@ public class RentalManager implements RentalService {
     @Override
     public void delete(UUID id) {
         rules.checkIfRentalExists(id);
+        sendKafkaRentalDeletedEvent(id);
         repository.deleteById(id);
     }
 
     private double getTotalPrice(Rental rental) {
         return rental.getDailyPrice() * rental.getRentedForDays();
+    }
+    private void sendKafkaRentalCreatedEvent(UUID carId) {
+        producer.sendMessage(new RentalCreatedEvent(carId), "rental-created");
+    }
+
+    private void sendKafkaRentalDeletedEvent(UUID id) {
+        var carId = repository.findById(id).orElseThrow().getCarId();
+        producer.sendMessage(new RentalDeletedEvent(carId), "rental-deleted");
     }
 }

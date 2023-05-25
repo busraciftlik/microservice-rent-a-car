@@ -1,8 +1,8 @@
 spring:
+  profiles:
+    active: production
   application:
     name: api-gateway
-  cloud:
-    config:
-      profile: development
   config:
     import: optional:configserver:http://localhost:8888
+

@@ -1,6 +1,12 @@
 spring:
+  application:
+    name: config-server
   cloud:
     config:
       server:
+        default-label: main
         git:
           uri: https://github.com/busraciftlik/config-server
+server:
+  port: 8888
+

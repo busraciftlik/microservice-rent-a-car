@@ -1,4 +1,4 @@
-package com.busraciftlik.common.util.mapper;
+package com.busraciftlik.common.configuration.mappers;
 
 import com.busraciftlik.common.util.mapper.ModelMapperManager;
 import com.busraciftlik.common.util.mapper.ModelMapperService;

@@ -1,5 +1,6 @@
-package com.busraciftlik.maintenanceservice.business.dto.requests.create;
+package com.busraciftlik.common.events.maintenance;
 
+import com.busraciftlik.common.events.Event;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -7,12 +8,10 @@ import lombok.Setter;
 
 import java.util.UUID;
 
-@Getter
 @Setter
-@AllArgsConstructor
+@Getter
 @NoArgsConstructor
-public class CreateMaintenanceRequest {
+@AllArgsConstructor
+public class MaintenanceCreatedEvent implements Event {
     private UUID carId;
-    private String information;
 }
-

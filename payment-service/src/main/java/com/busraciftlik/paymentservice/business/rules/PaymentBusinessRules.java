@@ -8,4 +8,5 @@ import org.springframework.stereotype.Service;
 @AllArgsConstructor
 public class PaymentBusinessRules {
     private final PaymentRepository repository;
+
 }

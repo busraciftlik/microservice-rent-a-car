@@ -16,4 +16,12 @@ public class Paths {
         public static final String ServiceBaePackage  ="com.busraciftlik.rentalservice";
     }
 
+    public static class Maintenance {
+        public static final String ServiceBasePackage = "com.busraciftlik.maintenanceservice";
+    }
+
+    public static class Payment {
+        public static final String ServiceBasePackage = "com.busraciftlik.paymentservice";
+    }
+
 }

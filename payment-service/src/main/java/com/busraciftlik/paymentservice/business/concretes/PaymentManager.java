@@ -9,6 +9,7 @@ import com.busraciftlik.paymentservice.business.dto.responses.get.GetAllPayments
 import com.busraciftlik.paymentservice.business.dto.responses.get.GetPaymentResponse;
 import com.busraciftlik.paymentservice.business.dto.responses.update.UpdatePaymentResponse;
 import com.busraciftlik.paymentservice.business.rules.PaymentBusinessRules;
+import com.busraciftlik.paymentservice.entities.Payment;
 import com.busraciftlik.paymentservice.repository.PaymentRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -25,12 +26,21 @@ public class PaymentManager implements PaymentService {
 
     @Override
     public List<GetAllPaymentsResponse> getAll() {
-        return null;
+        List<Payment> payments = repository.findAll();
+        List<GetAllPaymentsResponse> responses = payments
+                .stream().map(payment -> mapper.forResponse().map(payment,GetAllPaymentsResponse.class))
+                .toList();
+
+        return responses;
     }
 
     @Override
     public GetPaymentResponse getById(UUID id) {
-        return null;
+        //rules.checkIfPaymentExists(id);
+        Payment payment = repository.findById(id).orElseThrow();
+        GetPaymentResponse response = mapper.forResponse().map(payment, GetPaymentResponse.class);
+
+        return response;
     }
 
     @Override

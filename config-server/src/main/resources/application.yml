@@ -1,12 +1,11 @@
-#spring:
-#  application:
-#    name: config-server
-#  cloud:
-#    config:
-#      server:
-#        default-label: master
-#        git:
-#          uri:
-#      profiles:
-#        active:
-#server:
+spring:
+  application:
+    name: config-server
+  cloud:
+    config:
+      server:
+        default-label: master
+        git:
+          uri: https://github.com/busraciftlik/config-server
+server:
+  port: 8888

@@ -1,5 +1,9 @@
 package com.busraciftlik.paymentservice.business.concretes;
 
+import com.busraciftlik.common.kafka.producer.KafkaProducer;
+import com.busraciftlik.common.util.dto.ClientResponse;
+import com.busraciftlik.common.util.dto.CreateRentalPaymentRequest;
+import com.busraciftlik.common.util.exceptions.BusinessException;
 import com.busraciftlik.common.util.mapper.ModelMapperService;
 import com.busraciftlik.paymentservice.business.abstracts.PaymentService;
 import com.busraciftlik.paymentservice.business.dto.requests.create.CreatePaymentRequest;
@@ -20,15 +24,17 @@ import java.util.UUID;
 @Service
 @AllArgsConstructor
 public class PaymentManager implements PaymentService {
-    private final PaymentRepository repository;
     private final ModelMapperService mapper;
+    private final KafkaProducer producer;
+    private final PaymentRepository repository;
     private final PaymentBusinessRules rules;
 
     @Override
     public List<GetAllPaymentsResponse> getAll() {
-        List<Payment> payments = repository.findAll();
-        List<GetAllPaymentsResponse> responses = payments
-                .stream().map(payment -> mapper.forResponse().map(payment,GetAllPaymentsResponse.class))
+        var payments = repository.findAll();
+        var responses = payments
+                .stream()
+                .map(payment -> mapper.forResponse().map(payment, GetAllPaymentsResponse.class))
                 .toList();
 
         return responses;
@@ -36,25 +42,59 @@ public class PaymentManager implements PaymentService {
 
     @Override
     public GetPaymentResponse getById(UUID id) {
-        //rules.checkIfPaymentExists(id);
-        Payment payment = repository.findById(id).orElseThrow();
-        GetPaymentResponse response = mapper.forResponse().map(payment, GetPaymentResponse.class);
+        rules.checkIfPaymentExists(id);
+        var payment = repository.findById(id).orElseThrow();
+        var response = mapper.forResponse().map(payment, GetPaymentResponse.class);
 
         return response;
     }
 
     @Override
     public CreatePaymentResponse add(CreatePaymentRequest request) {
-        return null;
+        var payment = mapper.forRequest().map(request, Payment.class);
+        payment.setId(null);
+        repository.save(payment);
+
+        var response = mapper.forResponse().map(payment, CreatePaymentResponse.class);
+        return response;
     }
 
     @Override
     public UpdatePaymentResponse update(UUID id, UpdatePaymentRequest request) {
-        return null;
+        rules.checkIfPaymentExists(id);
+        var payment = mapper.forRequest().map(request, Payment.class);
+        payment.setId(id);
+        repository.save(payment);
+
+        var response = mapper.forResponse().map(payment, UpdatePaymentResponse.class);
+        return response;
     }
+
 
     @Override
     public void delete(UUID id) {
+        rules.checkIfPaymentExists(id);
+        repository.deleteById(id);
+    }
 
+    @Override
+    public ClientResponse processRentalPayment(CreateRentalPaymentRequest request) {
+        return validatePaymentAvailability(request);
+    }
+
+    private ClientResponse validatePaymentAvailability(CreateRentalPaymentRequest request) {
+        var response = new ClientResponse();
+        try {
+            rules.checkIfPaymentIsValid(request);
+            Payment payment = repository.findByCardNumber(request.getCardNumber());
+            rules.checkIfBalanceIfEnough(payment.getBalance(), request.getPrice());
+            payment.setBalance(payment.getBalance() - request.getPrice());
+            repository.save(payment);
+            response.setSuccess(true);
+        } catch (BusinessException exception) {
+            response.setSuccess(false);
+            response.setMessage(exception.getMessage());
+        }
+        return response;
     }
 }

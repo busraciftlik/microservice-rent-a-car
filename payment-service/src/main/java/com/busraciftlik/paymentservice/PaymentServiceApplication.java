@@ -1,9 +1,12 @@
 package com.busraciftlik.paymentservice;
 
+import com.busraciftlik.common.util.constants.Paths;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.openfeign.EnableFeignClients;
 
-@SpringBootApplication
+@EnableFeignClients
+@SpringBootApplication(scanBasePackages = {Paths.ConfigurationBasePackage, Paths.Payment.ServiceBasePackage})
 public class PaymentServiceApplication {
 
 	public static void main(String[] args) {

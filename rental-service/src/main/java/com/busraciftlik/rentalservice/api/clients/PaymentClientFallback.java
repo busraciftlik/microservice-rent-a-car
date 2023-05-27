@@ -11,7 +11,7 @@ public class PaymentClientFallback implements PaymentClient {
 
     @Override
     public ClientResponse checkIfPaymentAvailable(CreateRentalPaymentRequest request) {
-        log.info("INVENTORY SERVICE IS DOWN!");
+        log.info("SERVICE IS DOWN!");
         throw new RuntimeException("INVENTORY-SERVICE NOT AVAILABLE RIGHT NOW!--Payment");
     }
 }

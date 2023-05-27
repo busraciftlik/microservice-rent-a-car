@@ -1,8 +1,10 @@
 package com.busraciftlik.rentalservice.business.concretes;
 
+import com.busraciftlik.common.events.invoice.InvoiceCreatedEvent;
 import com.busraciftlik.common.events.rental.RentalCreatedEvent;
 import com.busraciftlik.common.events.rental.RentalDeletedEvent;
 import com.busraciftlik.common.kafka.producer.KafkaProducer;
+import com.busraciftlik.common.util.dto.GetCarResponse;
 import com.busraciftlik.common.util.mapper.ModelMapperService;
 import com.busraciftlik.rentalservice.api.clients.CarClient;
 import com.busraciftlik.rentalservice.business.abstracts.RentalService;
@@ -55,12 +57,15 @@ public class RentalManager implements RentalService {
     public CreateRentalResponse add(CreateRentalRequest request) {
         rules.ensureCarIsAvailable(request.getCarId());
         carClient.checkIfCarAvailable(request.getCarId());
+        InvoiceCreatedEvent invoiceCreatedEvent = new InvoiceCreatedEvent();
         var rental = mapper.forRequest().map(request, Rental.class);
         rental.setId(null);
         rental.setTotalPrice(getTotalPrice(rental));
         rental.setRentedAt(LocalDate.now());
+        mergeRequest(request,invoiceCreatedEvent,rental);
         repository.save(rental);
         sendKafkaRentalCreatedEvent(request.getCarId());
+        sendKafkaInvoiceCreatedEvent(invoiceCreatedEvent);
         var response = mapper.forResponse().map(rental, CreateRentalResponse.class);
 
         return response;
@@ -94,5 +99,21 @@ public class RentalManager implements RentalService {
     private void sendKafkaRentalDeletedEvent(UUID id) {
         var carId = repository.findById(id).orElseThrow().getCarId();
         producer.sendMessage(new RentalDeletedEvent(carId), "rental-deleted");
+    }
+
+    private void sendKafkaInvoiceCreatedEvent(InvoiceCreatedEvent event){
+        producer.sendMessage(event,"invoice-created");
+    }
+
+    private void mergeRequest(CreateRentalRequest request,InvoiceCreatedEvent event,Rental rental){
+        GetCarResponse response = carClient.getById(request.getCarId());
+        event.setBrandName(response.getBrandName());
+        event.setPlate(response.getPlate());
+        event.setModelName(response.getModelName());
+        event.setRentedAt(rental.getRentedAt());
+        event.setTotalPrice(rental.getTotalPrice());
+        event.setDailyPrice(rental.getDailyPrice());
+        event.setCardHolder(request.getPaymentRequest().getCardHolder());
+        event.setRentedForDays(rental.getRentedForDays());
     }
 }

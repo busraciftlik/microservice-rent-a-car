@@ -1,6 +1,5 @@
-package com.busraciftlik.inventoryservice.business.dto.responses.get;
+package com.busraciftlik.common.util.dto;
 
-import com.busraciftlik.inventoryservice.entities.enums.State;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -16,7 +15,9 @@ public class GetCarResponse {
     private UUID id;
     private UUID modelId;
     private int modelYear;
+    private String modelName;
+    private String brandName;
     private String plate;
-    private State state;
+    private String state;
     private double dailyPrice;
 }

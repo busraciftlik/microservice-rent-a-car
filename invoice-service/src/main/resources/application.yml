@@ -2,6 +2,6 @@ spring:
   profiles:
     active: development
   application:
-    name: PAYMENT-SERVICE
+    name: INVOICE-SERVICE
   config:
     import: optional:configserver:http://localhost:8888

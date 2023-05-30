@@ -14,15 +14,9 @@ import java.util.UUID;
 
 public interface PaymentService {
     List<GetAllPaymentsResponse> getAll();
-
     GetPaymentResponse getById(UUID id);
-
     CreatePaymentResponse add(CreatePaymentRequest request);
-
     UpdatePaymentResponse update(UUID id, UpdatePaymentRequest request);
-
     void delete(UUID id);
-
-    ClientResponse processRentalPayment(CreateRentalPaymentRequest request);
+    ClientResponse processPayment(CreateRentalPaymentRequest request);
 }
-

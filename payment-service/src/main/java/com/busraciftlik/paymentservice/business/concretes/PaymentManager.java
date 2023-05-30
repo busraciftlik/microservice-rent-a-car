@@ -1,11 +1,11 @@
 package com.busraciftlik.paymentservice.business.concretes;
 
-import com.busraciftlik.common.kafka.producer.KafkaProducer;
 import com.busraciftlik.common.util.dto.ClientResponse;
 import com.busraciftlik.common.util.dto.CreateRentalPaymentRequest;
 import com.busraciftlik.common.util.exceptions.BusinessException;
 import com.busraciftlik.common.util.mapper.ModelMapperService;
 import com.busraciftlik.paymentservice.business.abstracts.PaymentService;
+import com.busraciftlik.paymentservice.business.abstracts.PosService;
 import com.busraciftlik.paymentservice.business.dto.requests.create.CreatePaymentRequest;
 import com.busraciftlik.paymentservice.business.dto.requests.update.UpdatePaymentRequest;
 import com.busraciftlik.paymentservice.business.dto.responses.create.CreatePaymentResponse;
@@ -25,51 +25,50 @@ import java.util.UUID;
 @AllArgsConstructor
 public class PaymentManager implements PaymentService {
     private final ModelMapperService mapper;
-    private final KafkaProducer producer;
     private final PaymentRepository repository;
     private final PaymentBusinessRules rules;
+    private final PosService posService;
 
     @Override
     public List<GetAllPaymentsResponse> getAll() {
-        var payments = repository.findAll();
-        var responses = payments
+        var brands = repository.findAll();
+        var response = brands
                 .stream()
-                .map(payment -> mapper.forResponse().map(payment, GetAllPaymentsResponse.class))
+                .map(brand -> mapper.forResponse().map(brand, GetAllPaymentsResponse.class))
                 .toList();
 
-        return responses;
+        return response;
     }
 
     @Override
     public GetPaymentResponse getById(UUID id) {
         rules.checkIfPaymentExists(id);
-        var payment = repository.findById(id).orElseThrow();
-        var response = mapper.forResponse().map(payment, GetPaymentResponse.class);
+        var brand = repository.findById(id).orElseThrow();
+        var response = mapper.forResponse().map(brand, GetPaymentResponse.class);
 
         return response;
     }
 
     @Override
     public CreatePaymentResponse add(CreatePaymentRequest request) {
-        var payment = mapper.forRequest().map(request, Payment.class);
-        payment.setId(null);
-        repository.save(payment);
+        rules.checkIfCardNumberExists(request.getCardNumber());
+        var brand = mapper.forRequest().map(request, Payment.class);
+        var createdPayment = repository.save(brand);
+        var response = mapper.forResponse().map(createdPayment, CreatePaymentResponse.class);
 
-        var response = mapper.forResponse().map(payment, CreatePaymentResponse.class);
         return response;
     }
 
     @Override
     public UpdatePaymentResponse update(UUID id, UpdatePaymentRequest request) {
         rules.checkIfPaymentExists(id);
-        var payment = mapper.forRequest().map(request, Payment.class);
-        payment.setId(id);
-        repository.save(payment);
+        var brand = mapper.forRequest().map(request, Payment.class);
+        brand.setId(id);
+        repository.save(brand);
+        var response = mapper.forResponse().map(brand, UpdatePaymentResponse.class);
 
-        var response = mapper.forResponse().map(payment, UpdatePaymentResponse.class);
         return response;
     }
-
 
     @Override
     public void delete(UUID id) {
@@ -78,23 +77,26 @@ public class PaymentManager implements PaymentService {
     }
 
     @Override
-    public ClientResponse processRentalPayment(CreateRentalPaymentRequest request) {
-        return validatePaymentAvailability(request);
+    public ClientResponse processPayment(CreateRentalPaymentRequest request) {
+        var response = new ClientResponse();
+        processPaymentTransaction(request, response);
+
+        return response;
     }
 
-    private ClientResponse validatePaymentAvailability(CreateRentalPaymentRequest request) {
-        var response = new ClientResponse();
+    private void processPaymentTransaction(CreateRentalPaymentRequest request, ClientResponse response) {
         try {
-            rules.checkIfPaymentIsValid(request);
-            Payment payment = repository.findByCardNumber(request.getCardNumber());
-            rules.checkIfBalanceIfEnough(payment.getBalance(), request.getPrice());
-            payment.setBalance(payment.getBalance() - request.getPrice());
+            rules.checkIfPaymentValid(request);
+            var payment = repository.findByCardNumber(request.getCardNumber());
+            double balance = payment.getBalance();
+            rules.checkIfBalanceIsEnough(balance, request.getPrice());
+            posService.pay();
+            payment.setBalance(balance - request.getPrice());
             repository.save(payment);
             response.setSuccess(true);
         } catch (BusinessException exception) {
             response.setSuccess(false);
             response.setMessage(exception.getMessage());
         }
-        return response;
     }
 }

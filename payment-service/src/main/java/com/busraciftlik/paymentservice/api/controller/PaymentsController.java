@@ -10,7 +10,7 @@ import com.busraciftlik.paymentservice.business.dto.responses.get.GetAllPayments
 import com.busraciftlik.paymentservice.business.dto.responses.get.GetPaymentResponse;
 import com.busraciftlik.paymentservice.business.dto.responses.update.UpdatePaymentResponse;
 import jakarta.validation.Valid;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@AllArgsConstructor
+@RequiredArgsConstructor
 @RequestMapping("/api/payments")
 public class PaymentsController {
     private final PaymentService service;
@@ -50,9 +50,8 @@ public class PaymentsController {
         service.delete(id);
     }
 
-    @PostMapping("/check-payment-process")
-    public ClientResponse checkIfPaymentAvailable(@RequestBody CreateRentalPaymentRequest request) {
-        return service.processRentalPayment(request);
+    @PostMapping("/check")
+    public ClientResponse proccessPayment(@RequestBody CreateRentalPaymentRequest request) {
+        return service.processPayment(request);
     }
-
 }
